@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "express": "^5.1.0",
+    "google-auth-library": "^10.1.0",
+    "jsonwebtoken": "^9.0.2",
     "serverless-http": "^3.2.0"
   }
 }
