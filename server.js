@@ -1,50 +1,55 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const { OAuth2Client } = require('google-auth-library');
 const app = express();
 
-const PUBLIC_KEY = fs.readFileSync('public.key', 'utf8');
-app.use(express.json()); 
+const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAszLIxUngan7ql2Zp6L9n
+ORLzBLdn/jpaLwb8UYUftl6lVeXYcpK1VSmuTb3tFGTW1DnKLg63cRtPk5ynw4bE
+/6W8JXqXP1D9UThdNRTbge8FpJqRcQBP3xDmTcdwTw/nw/tgqArFBn4UBQgwSi3C
+YrifLeKv3aa+5UZAHGLVcTXdb7Tej0CeKg0G/C64MHqCMoTgx0QBqoTthXDId7Jp
+JcUii9ZPHi739FQBDmqKunfBbgWEULHLSVD/bbrxEh51rnSsUX4r/tJVuByrq+wt
+hL72V8jKEqHNMRgVdIpCA7SA1GM1TEOnsn+/Fg0QBFOLKrCkScpHCbLneO1pWKtr
+WQIDAQAB
+-----END PUBLIC KEY-----
+`;
 
-const CLIENT_ID = '433398797157-i4d0scs7n5qvkut4q9ru7b7i3v2dsaj1.apps.googleusercontent.com';
-const client = new OAuth2Client(CLIENT_ID);
+app.post('/webhook', express.text(), (request, response) => {
+  let event;
+  let eventData;
+
+  try {
+    const rawPayload = jwt.verify(request.body, PUBLIC_KEY);
+    event = JSON.parse(rawPayload.data);
+    eventData = JSON.parse(event.data);
+  } catch (err) {
+    console.error(err);
+    response.status(400).send(`Webhook error: ${err.message}`);
+    return;
+  }
+
+  switch (event.eventType) {
+    case "AppInstalled":
+      console.log(`AppInstalled event received with data:`, eventData);
+      console.log(`App instance ID:`, event.instanceId);
+
+      // Example: Log installation to a file
+      const fs = require('fs');
+      const logEntry = `App installed at ${new Date().toISOString()} with instanceId: ${event.instanceId}\n`;
+      fs.appendFileSync('installations.log', logEntry);
+
+      // You can add more actions here, such as sending an email or saving to a database
+
+      break;
+    default:
+      console.log(`Received unknown event type: ${event.eventType}`);
+      break;
+  }
+
+  response.status(200).send();
+});
 
 app.get('/webhook', (req, res) => {
   res.send('This is the webhook endpoint. Use POST to send data.');
-});
-
-app.post('/webhook', (request, response) => {
-  console.log('Request body:', request.body);
-  const token = request.body.token;
-  if (!token) {
-    return response.status(400).send('Webhook error: jwt must be provided');
-  }
-  try {
-    const rawPayload = jwt.verify(token, PUBLIC_KEY);
-    const event = JSON.parse(rawPayload.data);
-    const eventData = JSON.parse(event.data);
-    console.log('Event:', event);
-    console.log('Event Data:', eventData);
-    response.status(200).send('Webhook received!');
-  } catch (err) {
-    response.status(400).send(`Webhook error: ${err.message}`);
-  }
-});
-
-app.post('/webhook/google-auth', async (req, res) => {
-  const { token } = req.body;
-  try {
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    // Do something with the user info in payload
-    res.json({ status: 'success', user: payload });
-  } catch (error) {
-    res.status(401).json({ status: 'error', message: 'Invalid token' });
-  }
 });
 
 app.get('/', (req, res) => {
