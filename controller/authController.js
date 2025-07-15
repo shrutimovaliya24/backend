@@ -22,6 +22,7 @@ exports.handleGoogleSignIn = async (req, res) => {
       { expiresIn: "7d" }
     );
     console.log("Loaded secret:", process.env.APP_JWT_SECRET);
+    console.log("Generated JWT token:", appJwt);
 
     return res.json({ message: "OK", token: appJwt });
   } catch (err) {
