@@ -1,0 +1,64 @@
+import express from "express";
+import { AppStrategy, createClient } from "@wix/sdk";
+import { appInstances } from "@wix/app-management";
+const app = express();
+
+// server.ts
+//
+// Use this sample code to handle webhook events in your
+// expressjs typescript server using the Wix SDK package.
+// allowing for type checking and auto-completion.
+//
+// 1) Paste this code into a new file (server.ts)
+//
+// 2) Install dependencies
+//   npm install @wix/sdk
+//   npm install @wix/app-management
+//   npm install express
+//
+// 3) Run the server on http://localhost:3000
+//   npx ts-node server.ts
+
+// consider loading your public key from a file or an environment variable
+const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuf9Z+KcQwCIKWfhTOyfy
+dLuKkKVSdXInUTLqU3juUX4Ulg7un1YhdHnpSZPKu/ztmLzz+fITQfKuiNCRB7S1
+2X5paU0IvXRBhP0wHGoFpCuyjQTZb1UMON339GPpbVEVld/zDGdMpG29Z0yioqw7
+dnjAkUKF02haObVGOWARr8z3FrBz+PRYkfLo7PlPYY0cFoQkqTM3raHe7CaSUUfK
+KnzKCIVPrkGLix+r/gsXaBLqW9AraIf0MKN3HUrehcK78iQc/D2sJOiNhwCO2pod
+ZM5arJc3JHHFWFF6N32E9Cg8E1DVyBLdf37qFVIkSkd6KjdzsS6yGHUp1m8NQjMZ
+IwIDAQAB
+-----END PUBLIC KEY-----`;
+const APP_ID = "e642d69b-7979-4e60-bddd-242d0b84d792";
+
+const client = createClient({
+  auth: AppStrategy({
+    appId: APP_ID,
+    publicKey: PUBLIC_KEY,
+  }),
+  modules: { appInstances },
+});
+
+client.appInstances.onAppInstanceInstalled((event) => {
+  console.log(`onAppInstanceInstalled invoked with data:`, event);
+  console.log(`App instance ID:`, event.metadata.instanceId);
+  //
+  // handle your event here
+  //
+});
+
+app.post("/webhook", express.text(), async (request, response) => {
+  try {
+    await client.webhooks.process(request.body);
+  } catch (err) {
+    console.error(err);
+    response
+      .status(500)
+      .send(`Webhook error: ${err instanceof Error ? err.message : err}`);
+    return;
+  }
+
+  response.status(200).send();
+});
+
+app.listen(3000, () => console.log("Server started on port 3000"))
