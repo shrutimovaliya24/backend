@@ -1,9 +1,10 @@
-const express = require("express");
-const { handleEvent } = require("../controller/eventController");
-const router = express.Router();
 
-router.post('/', (req, res) => {
-    res.json({ message: 'Webhook received!' });
-  });
-  
+
+const express = require("express");
+const router = express.Router();
+const { handleEvent } = require("../controller/eventController");
+
+
+router.post('/', handleEvent);
+
 module.exports = router;

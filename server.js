@@ -11,7 +11,7 @@ const app = express();
 // 1) Only allow your frontend origin:
 app.use(
   cors({
-    origin: process.env.FRONTEND_ORIGIN,
+    origin: process.env.FRONTEND_ORIGIN || "http://localhost:3000",
     methods: ["POST"],
   })
 );
