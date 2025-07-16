@@ -4,7 +4,7 @@ const cors = require("cors");
 
 const authRouter = require("./routes/auth");
 const eventsRouter = require("./routes/events");
-const webhookRouter =  require("./routes/webhook");
+
 
 const app = express();
 
@@ -23,7 +23,7 @@ app.use(express.text({ type: "text/plain" }));
 // 3) Mount routes:
 app.use("/auth", authRouter);
 app.use("/events", eventsRouter);
-app.use("/webhook", webhookRouter);
+
 
 // 4) Global error handler (optional):
 app.use((err, req, res, next) => {
