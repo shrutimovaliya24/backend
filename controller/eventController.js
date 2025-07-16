@@ -11,13 +11,16 @@ exports.handleEvent = (req, res) => {
   try {
     const payload = jwt.verify(token, PUBLIC_KEY, { algorithms: ["RS256"] });
     if (!payload.data) throw new Error("No data field");
-    const event = JSON.parse(payload.data);
+    
+    const event = typeof payload.data === "string" ? JSON.parse(payload.data) : payload.data;
+    const eventData = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
 
     switch (event.eventType) {
       case "AppInstalled":
-        console.log("AppInstalled:", event.instanceId, event.data);
+        console.log("AppInstalled received for instance:", event.instanceId);
+        console.log("Installation data:", eventData);
         break;
-      default:
+      default: 
         console.warn("Unhandled eventType:", event.eventType);
     }
 
