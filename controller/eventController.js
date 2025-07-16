@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-
+const Events = require('../models/events');
 const PUBLIC_KEY = process.env.EVENTS_PUBLIC_KEY;
 
 exports.handleEvent = (req, res) => {
@@ -17,9 +17,15 @@ exports.handleEvent = (req, res) => {
 
     switch (event.eventType) {
       case "AppInstalled":
-        console.log("AppInstalled received for instance:", event.instanceId);
-        console.log("Installation data:", eventData);
-        break;
+        Events.create(event.eventType, event.instanceId, eventData, (err, results) => {
+          if (err) {
+            console.error('Error inserting event into DB:', err);
+            return res.status(500).send('Database error');
+          }
+          console.log('Event inserted with ID:', results.insertId);
+          return res.send("Event processed and stored");
+        });
+        return;
       default: 
         console.warn("Unhandled eventType:", event.eventType);
     }
