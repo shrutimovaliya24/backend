@@ -1,23 +1,12 @@
-const db = require('../config/db');
+const pool = require('../config/db');
 
 const Events = {
   create: (eventType, instanceId, eventData, callback) => {
-    const sql = `
-      INSERT INTO events (event_type, instance_id, event_data)
-      VALUES (?, ?, ?)
-    `;
-
-    const values = [
-      eventType,
-      instanceId,
-      JSON.stringify(eventData)
-    ];
-
-    db.query(sql, values, (err, results) => {
+    pool.query('INSERT INTO events (event_type, instance_id, event_data) VALUES (?, ?, ?)', [eventType, instanceId, JSON.stringify(eventData)], (err, results) => {
       if (err) {
-        return callback(err);
+        // handle error
       }
-      callback(null, results);
+      // handle success
     });
   }
 };
