@@ -23,7 +23,7 @@ exports.handleEvent = (req, res) => {
             return res.status(500).send('Database error');
           }
           console.log('Event inserted with ID:', results.insertId);
-          return res.send("Event processed and stored");
+          return res.status(200).send("Event processed and stored");
         });
         return;
       default: 
