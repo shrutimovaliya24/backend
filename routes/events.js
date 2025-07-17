@@ -1,5 +1,3 @@
-
-
 const express = require("express");
 const router = express.Router();
 const { handleEvent } = require("../controller/eventController");
